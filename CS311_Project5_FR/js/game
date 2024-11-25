@@ -1,0 +1,84 @@
+// Set initial game state
+let balance = 100.00;
+let point = null;
+
+// Select DOM elements
+const rollButton = document.getElementById('roll-btn');
+const betInput = document.getElementById('bet');
+const balanceDisplay = document.getElementById('balance');
+const dice1Image = document.getElementById('dice1');
+const dice2Image = document.getElementById('dice2');
+const gameResult = document.getElementById('game-result');
+
+// Dice Images
+const diceImages = [
+    'img/dice1.png',
+    'img/dice2.png',
+    'img/dice3.png',
+    'img/dice4.png',
+    'img/dice5.png',
+    'img/dice6.png'
+];
+
+// Function to roll a die (returns a number between 1 and 6)
+function rollDie() {
+    return Math.floor(Math.random() * 6) + 1;
+}
+
+// Function to update the dice images based on the roll
+function updateDiceImages(dice1, dice2) {
+    dice1Image.src = diceImages[dice1 - 1];
+    dice2Image.src = diceImages[dice2 - 1];
+}
+
+// Function to calculate score and check game outcome
+function calculateScore() {
+    const betAmount = parseFloat(betInput.value);
+
+    // Check if bet is valid
+    if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
+        alert("Invalid bet amount.");
+        return;
+    }
+
+    // Roll dice
+    const die1 = rollDie();
+    const die2 = rollDie();
+    const sum = die1 + die2;
+
+    updateDiceImages(die1, die2);
+
+    // Handle game rules based on the sum
+    if (point === null) {
+        // First roll
+        if (sum === 7 || sum === 11) {
+            balance += betAmount; // Player wins
+            gameResult.textContent = `You win! Sum: ${sum}`;
+        } else if (sum === 2 || sum === 3 || sum === 12) {
+            balance -= betAmount; // Player loses
+            gameResult.textContent = `You lose! Sum: ${sum}`;
+        } else {
+            point = sum; // Set the point
+            gameResult.textContent = `Point is: ${point}. Keep rolling!`;
+        }
+    } else {
+        // Subsequent rolls after a point is set
+        if (sum === point) {
+            balance += betAmount; // Player wins
+            gameResult.textContent = `You win! You made your point: ${sum}`;
+            point = null; // Reset point
+        } else if (sum === 7) {
+            balance -= betAmount; // Player loses
+            gameResult.textContent = `You lose! Sum: ${sum}`;
+            point = null; // Reset point
+        } else {
+            gameResult.textContent = `Point is still: ${point}. Keep rolling!`;
+        }
+    }
+
+    // Update balance display
+    balanceDisplay.textContent = balance.toFixed(2);
+}
+
+// Event listener for roll button
+rollButton.addEventListener('click', calculateScore);
